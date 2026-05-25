@@ -181,7 +181,7 @@ Aplikasi akan diuji secara lokal terlebih dahulu, kemudian diunggah ke GitHub da
 UAS-BENGKOD/
 │
 ├── notebook/
-│   └── uas_customer_churn.ipynb
+│   └── A11_2023_15018_UAS_BENGKOD.ipynb
 │
 ├── dataset/
 │   └── sales_and_marketing.csv
