@@ -1,194 +1,319 @@
-# UAS Bengkel Koding Data Science
+# Customer Churn Prediction
 
-## Identitas Mahasiswa
+Project UAS Bengkel Koding Data Science untuk memprediksi apakah pelanggan berpotensi berhenti menggunakan layanan (*churn*) atau tetap menggunakan layanan.
 
-| Keterangan | Isi |
-|---|---|
-| Nama | Suryani Ayu Dewanti|
-| NIM | A11.2023.15018 |
-| Kelompok | DS 01 |
-| Mata Kuliah | Bengkel Koding Data Science |
-| Project | Customer Churn Prediction |
+- **Nama:** Suryani Ayu Dewanti
+- **NIM:** A11.2023.15018
+- **Target:** `churn`
+- **Kelas 0:** tidak churn
+- **Kelas 1:** churn
 
----
+## Gambaran Project
 
-## Judul Project
+Project ini membangun dan membandingkan tiga kategori model *machine learning* pada tiga skenario eksperimen. Total terdapat sembilan hasil model yang dibandingkan menggunakan metrik klasifikasi.
 
-**Customer Churn Prediction Menggunakan Machine Learning pada Sales and Marketing Customer Dataset**
+### Model yang digunakan
 
----
+1. Logistic Regression sebagai model konvensional.
+2. Random Forest sebagai model *ensemble bagging*.
+3. Voting Classifier sebagai gabungan beberapa model.
 
-## Deskripsi Project
+### Skenario eksperimen
 
-Project ini merupakan tugas Ujian Akhir Semester Bengkel Koding Data Science. Project ini berfokus pada prediksi **customer churn**, yaitu kondisi ketika pelanggan berhenti menggunakan layanan atau tidak lagi melakukan aktivitas pembelian.
+1. Direct Modeling + SMOTE.
+2. Preprocessing + SMOTE.
+3. Hyperparameter Tuning + SMOTE.
 
-Dataset yang digunakan adalah **Sales and Marketing Customer Dataset**. Dataset ini berisi informasi pelanggan seperti data demografis, aktivitas penggunaan layanan, riwayat transaksi, interaksi pelanggan, serta informasi pemasaran.
-
-Target prediksi pada project ini adalah kolom:
-
-- `churn = 0` berarti pelanggan tidak churn
-- `churn = 1` berarti pelanggan churn
-
-Tujuan utama project ini adalah membangun model machine learning untuk memprediksi kemungkinan pelanggan churn, mengevaluasi beberapa model, memilih model terbaik, dan melakukan deployment menggunakan Streamlit Cloud.
-
----
-
-## Bidang Project
-
-Project ini berada pada bidang:
-
-**Data Science / Machine Learning untuk Bisnis dan Pemasaran**
-
-Secara lebih spesifik, project ini termasuk ke dalam:
-
-- Customer Churn Prediction
-- Supervised Learning
-- Classification
-- Sales and Marketing Analytics
-- Customer Relationship Management Analytics
-
----
+Model terbaik dipilih dari seluruh sembilan hasil eksperimen berdasarkan F1-score, recall, dan accuracy. F1-score menjadi pertimbangan utama karena distribusi target mengalami ketidakseimbangan kelas.
 
 ## Dataset
 
-Dataset yang digunakan:
-
-**Sales and Marketing Dataset**
+Dataset yang digunakan adalah **Sales and Marketing Customer Dataset** dari Kaggle.
 
 Sumber dataset:
 
+```text
 https://www.kaggle.com/datasets/bhaskerpaul/sales-and-marketing-dataset
+```
 
-Jumlah data berdasarkan soal:
+Dataset memuat informasi demografis pelanggan, aktivitas penggunaan layanan, riwayat transaksi, interaksi pemasaran, tingkat kepuasan, dan status churn.
 
-- 15.000 records
-- 30 kolom
+## Alur Pengerjaan
 
-Beberapa fitur yang digunakan dalam dataset antara lain:
+### 1. Exploratory Data Analysis
+
+Tahapan EDA meliputi:
+
+- Pemeriksaan struktur dan tipe data.
+- Statistik deskriptif.
+- Pemeriksaan dan visualisasi missing value.
+- Visualisasi distribusi target churn.
+- Visualisasi outlier.
+- Encoding fitur kategorikal sebelum analisis korelasi.
+- Heatmap korelasi fitur numerik kontinu dan kategori hasil encoding.
+- Analisis hubungan setiap fitur terhadap target churn.
+
+### 2. Feature Engineering
+
+Beberapa fitur diubah agar lebih sesuai untuk model:
+
+- `coupon_code` diubah menjadi `has_coupon_code`.
+- `signup_date` dan `last_purchase_date` diubah menjadi:
+  - `customer_tenure_days`
+  - `days_since_last_purchase`
+
+### 3. Feature Selection
+
+Tiga fitur dengan pengaruh terendah dihapus:
 
 - `customer_id`
-- `gender`
-- `age`
-- `country`
-- `city`
-- `signup_date`
-- `last_purchase_date`
-- `acquisition_channel`
-- `device_type`
-- `subscription_type`
-- `is_premium_user`
-- `total_visits`
-- `avg_session_time`
-- `pages_per_session`
-- `email_open_rate`
-- `email_click_rate`
-- `total_spent`
-- `avg_order_value`
 - `discount_used`
-- `coupon_code`
-- `support_tickets`
-- `refund_requested`
-- `delivery_delay_days`
-- `payment_method`
-- `satisfaction_score`
-- `nps_score`
-- `marketing_spend_per_user`
-- `lifetime_value`
-- `last_3_month_purchase_freq`
-- `churn`
+- `avg_order_value`
 
----
+`customer_id` dihapus karena hanya berfungsi sebagai identitas pelanggan. Dua fitur lainnya dihapus berdasarkan hasil analisis pengaruh terhadap target.
 
-## Tujuan Project
+### 4. Penanganan Missing Value
 
-Tujuan dari project ini adalah:
+Missing value ditangani sesuai tipe dan distribusi fitur:
 
-1. Melakukan Exploratory Data Analysis atau EDA untuk memahami karakteristik dataset.
-2. Membangun model prediksi churn menggunakan tiga kategori model machine learning.
-3. Membandingkan performa model pada beberapa skenario eksperimen.
-4. Melakukan hyperparameter tuning untuk meningkatkan performa model.
-5. Memilih model terbaik berdasarkan hasil evaluasi.
-6. Melakukan deployment model terbaik menggunakan Streamlit Cloud.
+- Fitur numerik diisi menggunakan mean atau median.
+- Median digunakan pada fitur dengan distribusi miring atau memiliki nilai ekstrem.
+- Mean digunakan pada fitur dengan distribusi relatif simetris.
+- Fitur kategorikal diisi menggunakan modus atau nilai yang paling sering muncul.
+- Nilai kosong pada `coupon_code` tidak langsung diimputasi, tetapi diubah menjadi informasi ada atau tidaknya kupon.
 
----
+Pada aplikasi Streamlit, pilihan seperti `age tidak diketahui` akan diubah menjadi `NaN`, kemudian ditangani oleh imputer yang sama seperti saat training.
 
-## Skenario Modeling
+### 5. Penanganan Outlier
 
-Project ini akan menghasilkan total **9 model**, yang berasal dari kombinasi:
+Outlier divisualisasikan pada tahap EDA dan ditangani menggunakan **IQR Capping**.
 
-- 3 kategori model
-- 3 skenario eksperimen
+Nilai di luar batas bawah dan batas atas tidak dihapus, tetapi dibatasi pada nilai IQR yang telah dihitung dari data train.
 
-### Kategori Model
+### 6. Encoding dan Scaling
 
-1. Model konvensional  
-   Contoh: Logistic Regression atau KNN
+- Fitur kategorikal diubah menggunakan `OneHotEncoder`.
+- Fitur numerik di-*scaling* menggunakan `StandardScaler`.
+- Seluruh transformer disusun menggunakan `ColumnTransformer` dan `Pipeline`.
 
-2. Ensemble Bagging  
-   Contoh: Random Forest
+### 7. Train, Validation, dan Test Split
 
-3. Ensemble Voting  
-   Contoh: VotingClassifier yang menggabungkan beberapa model konvensional
+Data dibagi menjadi data train, validation, dan test.
 
-### Skenario Eksperimen
+SMOTE hanya diterapkan pada:
 
-1. Direct Modeling  
-   Model dilatih langsung tanpa preprocessing dan tanpa hyperparameter tuning.
+- Data train.
+- Data validation.
 
-2. Modeling dengan Preprocessing  
-   Model dilatih setelah data melalui proses preprocessing.
+Data test tetap menggunakan distribusi asli agar evaluasi akhir menggambarkan kondisi nyata.
 
-3. Hyperparameter Tuning  
-   Model dioptimasi menggunakan metode tuning seperti GridSearchCV atau RandomizedSearchCV.
+### 8. Penanganan Imbalance
 
----
+Ketidakseimbangan kelas ditangani menggunakan **SMOTE**.
 
-## Evaluasi Model
+SMOTE membuat sampel sintetis pada kelas minoritas agar jumlah kelas lebih seimbang. SMOTE tidak diterapkan pada data test dan tidak dijalankan saat pengguna melakukan prediksi pada aplikasi Streamlit.
 
-Metrik evaluasi yang digunakan dalam project ini adalah:
+### 9. Evaluasi Model
+
+Model dievaluasi menggunakan:
 
 - Accuracy
 - Precision
 - Recall
-- F1-Score
-- Confusion Matrix
+- F1-score
+- Confusion matrix
 
----
+Hasil dari seluruh sembilan eksperimen dibandingkan untuk menentukan model terbaik.
+
+### 10. Hyperparameter Tuning
+
+Metode tuning yang digunakan:
+
+- `GridSearchCV` untuk Logistic Regression.
+- `RandomizedSearchCV` untuk Random Forest.
+- `RandomizedSearchCV` untuk Voting Classifier.
+
+Tuning dilakukan untuk memperoleh kombinasi parameter terbaik dari masing-masing model.
 
 ## Deployment
 
-Model terbaik akan disimpan dalam format:
+Model terbaik beserta seluruh komponen preprocessing disimpan dalam:
 
-- `.pkl`
-- atau `.joblib`
+```text
+customer_churn_deployment.joblib
+```
 
-Kemudian model akan digunakan pada aplikasi Streamlit yang berisi:
+File tersebut memuat:
 
-- Pemuatan model
-- Form input fitur pelanggan
-- Proses prediksi churn
-- Tampilan hasil prediksi
-- Penjelasan fitur
-- Visualisasi pendukung jika diperlukan
+- Model terbaik.
+- Nama dan skenario model.
+- Preprocessor.
+- Batas IQR.
+- Daftar fitur input.
+- Daftar fitur setelah preprocessing.
+- Tanggal referensi.
+- Daftar fitur yang dihapus.
+- Strategi imputasi.
+- Informasi SMOTE.
+- Hasil evaluasi model.
 
-Aplikasi akan diuji secara lokal terlebih dahulu, kemudian diunggah ke GitHub dan dideploy ke Streamlit Cloud.
+Aplikasi Streamlit memanggil file `.joblib`, bukan menjalankan notebook secara langsung.
 
----
+Alur prediksi pada aplikasi:
 
-## Struktur Project Sementara
+```text
+Input pengguna
+→ Feature engineering
+→ IQR capping
+→ Imputasi missing value
+→ OneHotEncoder
+→ StandardScaler
+→ Prediksi model
+→ Hasil churn atau tidak churn
+```
+
+## Fitur Aplikasi Streamlit
+
+Aplikasi menyediakan:
+
+- Form input dengan nama kolom yang mengikuti dataset.
+- Pilihan untuk memasukkan nilai tidak diketahui sebagai missing value.
+- Prediksi churn atau tidak churn.
+- Probabilitas churn.
+- Informasi model dan metrik evaluasi.
+- Penjelasan preprocessing.
+- Informasi penerapan SMOTE.
+- Panduan pengisian fitur.
+- Unduh hasil prediksi dalam format CSV.
+
+## Struktur Project
+
+```text
+UAS-BENGKOD/
+├── app.py
+├── customer_churn_deployment.joblib
+├── requirements.txt
+├── README.md
+└── A11_2023_15018_UAS_BENGKOD_FINAL_REVISI.ipynb
+```
+
+Keterangan:
+
+- `app.py`: aplikasi Streamlit.
+- `customer_churn_deployment.joblib`: model dan komponen preprocessing.
+- `requirements.txt`: daftar library yang diperlukan.
+- `README.md`: dokumentasi project.
+- File `.ipynb`: proses EDA, preprocessing, modeling, tuning, evaluasi, dan penyimpanan model.
+
+## Instalasi dan Menjalankan Project
+
+### 1. Clone repository
 
 ```bash
-UAS-BENGKOD/
-│
-├── notebook/
-│   └── A11_2023_15018_UAS_BENGKOD.ipynb
-│
-├── dataset/
-│   └── sales_and_marketing.csv
-│
-├── model/
-│   └── best_model.pkl
-│
-├── app.py
-├── requirements.txt
-└── README.md
+git clone https://github.com/ayyudwn/UAS-BENGKOD.git
+cd UAS-BENGKOD
+```
+
+### 2. Membuat virtual environment
+
+```bash
+python -m venv venv
+```
+
+### 3. Mengaktifkan virtual environment
+
+Untuk Windows CMD:
+
+```bash
+venv\Scripts\activate
+```
+
+Untuk Windows PowerShell:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\venv\Scripts\Activate.ps1
+```
+
+Untuk Linux atau macOS:
+
+```bash
+source venv/bin/activate
+```
+
+### 4. Menginstal dependency
+
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 5. Menjalankan aplikasi
+
+```bash
+python -m streamlit run app.py
+```
+
+Aplikasi biasanya dapat diakses melalui:
+
+```text
+http://localhost:8501
+```
+
+### 6. Menghentikan aplikasi
+
+Tekan:
+
+```text
+Ctrl + C
+```
+
+Untuk keluar dari virtual environment:
+
+```bash
+deactivate
+```
+
+## Requirements
+
+Isi minimal `requirements.txt`:
+
+```text
+streamlit
+pandas
+numpy
+scikit-learn
+imbalanced-learn
+joblib
+```
+
+Versi `scikit-learn` dan `imbalanced-learn` sebaiknya disamakan dengan versi yang digunakan saat membuat file `.joblib` agar tidak terjadi masalah kompatibilitas.
+
+## Deployment ke Streamlit Community Cloud
+
+1. Pastikan `app.py`, `customer_churn_deployment.joblib`, `requirements.txt`, dan `README.md` sudah di-*push* ke GitHub.
+2. Buka Streamlit Community Cloud.
+3. Hubungkan akun GitHub.
+4. Pilih repository `UAS-BENGKOD`.
+5. Pilih branch utama.
+6. Isi main file path dengan:
+
+```text
+app.py
+```
+
+7. Jalankan deployment.
+8. Pastikan file `.joblib` dapat dimuat dan seluruh form prediksi berjalan.
+
+## Catatan
+
+- SMOTE hanya digunakan pada proses training dan validation.
+- Data test tidak melalui SMOTE.
+- Input pengguna pada Streamlit juga tidak melalui SMOTE.
+- Notebook digunakan untuk membangun model.
+- Aplikasi hanya memanggil file `customer_churn_deployment.joblib`.
+- Model tetap perlu dievaluasi secara berkala apabila digunakan pada data baru.
+
+## Lisensi
+
+Project ini dibuat untuk keperluan akademik UAS Bengkel Koding Data Science.
